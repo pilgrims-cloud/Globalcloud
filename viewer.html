@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer - Zip Upload & File Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .viewer-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .viewer-header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .viewer-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .viewer-title h1 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .window-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .window-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .minimize-btn {
+            background: #f1c40f;
+            color: #2c3e50;
+        }
+
+        .maximize-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .close-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .network-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .network-selector label {
+            font-size: 12px;
+            color: #bdc3c7;
+        }
+
+        .network-selector select {
+            background: #34495e;
+            color: white;
+            border: 1px solid #bdc3c7;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .viewer-toolbar {
+            background: white;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .upload-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-btn:hover {
+            background: #2980b9;
+        }
+
+        .file-info {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .viewer-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #d5dbdb;
+        }
+
+        .action-btn.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .viewer-content {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .document-viewer {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+            padding: 20px;
+        }
+
+        .file-placeholder {
+            text-align: center;
+            padding: 100px 20px;
+            color: #7f8c8d;
+        }
+
+        .file-placeholder .icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .file-placeholder h2 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .file-preview {
+            display: none;
+        }
+
+        .file-preview.active {
+            display: block;
+        }
+
+        .text-viewer {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            overflow: auto;
+        }
+
+        .image-viewer {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .code-viewer {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            resize: vertical;
+            overflow: auto;
+        }
+
+        .pdf-viewer {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        .storage-status {
+            background: #e8f5e9;
+            padding: 10px 20px;
+            border-bottom: 1px solid #c8e6c9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .storage-status .info {
+            display: flex;
+            gap: 20px;
+        }
+
+        .storage-status .info-item {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .storage-status .cloud-status {
+            display: flex;
+            gap: 15px;
+        }
+
+        .cloud-status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .cloud-status-item.connected {
+            color: #27ae60;
+        }
+
+        .minimized-viewer {
+            position: fixed;
+            bottom: 0;
+            left: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            padding: 10px 20px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .minimized-viewer.active {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .minimized-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .restore-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* File type specific styles */
+        .file-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .file-type-pdf {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .file-type-doc {
+            background: #3498db;
+            color: white;
+        }
+
+        .file-type-image {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .file-type-code {
+            background: #27ae60;
+            color: white;
+        }
+
+        .file-type-text {
+            background: #95a5a6;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .viewer-toolbar {
+                flex-direction: column;
+            }
+
+            .upload-section,
+            .viewer-actions {
+                width: 100%;
+            }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <div class="viewer-container">
+        <!-- Header with Window Controls -->
+        <div class="viewer-header">
+            <div class="viewer-title">
+                <h1>📄 Document Viewer</h1>
+                <span id="fileTypeBadge" class="file-type-badge" style="display: none;"></span>
+            </div>
+            
+            <div class="network-selector">
+                <label>Network:</label>
+                <select id="networkSelect" onchange="changeNetwork()">
+                    <option value="github">🐙 GitHub</option>
+                    <option value="aws">🔶 AWS S3</option>
+                    <option value="google">🌐 Google Drive</option>
+                    <option value="nasa">🚀 NASA</option>
+                </select>
+            </div>
+
+            <div class="window-controls">
+                <button class="window-btn minimize-btn" onclick="minimizeViewer()" title="Minimize">−</button>
+                <button class="window-btn maximize-btn" onclick="maximizeViewer()" title="Maximize">□</button>
+                <button class="window-btn close-btn" onclick="closeViewer()" title="Close">×</button>
+            </div>
+        </div>
+
+        <!-- Storage Status -->
+        <div class="storage-status">
+            <div class="info">
+                <div class="info-item">📦 Total Storage: 1,000,000 GB</div>
+                <div class="info-item">⬆️ Upload Limit: 2GB per file</div>
+                <div class="info-item" id="usedStorage">💾 Used: 0 GB</div>
+            </div>
+            <div class="cloud-status">
+                <div class="cloud-status-item connected" id="githubStatus">🐙 GitHub: Connected</div>
+                <div class="cloud-status-item connected" id="awsStatus">🔶 AWS: Connected</div>
+                <div class="cloud-status-item connected" id="googleStatus">🌐 Google: Connected</div>
+                <div class="cloud-status-item connected" id="nasaStatus">🚀 NASA: Connected</div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="viewer-toolbar">
+            <div class="upload-section">
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.txt,.html,.css,.js,.jpg,.jpeg,.png,.gif">
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">📁 Open File</button>
+                <span class="file-info" id="fileInfo">No file selected</span>
+            </div>
+            
+            <div class="viewer-actions">
+                <button class="action-btn active" onclick="setViewMode('view')" id="viewModeBtn">👁️ View</button>
+                <button class="action-btn" onclick="setViewMode('edit')" id="editModeBtn">✏️ Edit</button>
+                <button class="action-btn" onclick="saveToCloud()">☁️ Save to Cloud</button>
+                <button class="action-btn" onclick="downloadFile()">⬇️ Download</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="viewer-content">
+            <div class="document-viewer">
+                <!-- Placeholder -->
+                <div class="file-placeholder" id="filePlaceholder">
+                    <div class="icon">📄</div>
+                    <h2>No File Selected</h2>
+                    <p>Supported formats: PDF, DOC, DOCX, TXT, HTML, CSS, JavaScript, Images</p>
+                </div>
+
+                <!-- Text Viewer -->
+                <div class="file-preview" id="textPreview">
+                    <textarea class="text-viewer" id="textContent" readonly></textarea>
+                </div>
+
+                <!-- Image Viewer -->
+                <div class="file-preview" id="imagePreview">
+                    <img class="image-viewer" id="imageContent" alt="Preview">
+                </div>
+
+                <!-- Code Viewer -->
+                <div class="file-preview" id="codePreview">
+                    <textarea class="code-viewer" id="codeContent" readonly></textarea>
+                </div>
+
+                <!-- PDF Viewer -->
+                <div class="file-preview" id="pdfPreview">
+                    <iframe class="pdf-viewer" id="pdfContent"></iframe>
+                </div>
+
+                <!-- HTML Preview -->
+                <div class="file-preview" id="htmlPreview">
+                    <iframe id="htmlContent" style="width: 100%; height: 600px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minimized State -->
+        <div class="minimized-viewer" id="minimizedViewer">
+            <div class="minimized-title" id="minimizedTitle">Document Viewer</div>
+            <button class="restore-btn" onclick="restoreViewer()">Restore</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        let currentFile = null;
+        let currentNetwork = 'github';
+        let isMaximized = false;
+        let usedStorageGB = 0;
+        let viewMode = 'view';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            setupFileInput();
+            updateStorageStatus();
+        });
+
+        function checkAuth() {
+            if (localStorage.getItem('adminLoggedIn') !== 'true') {
+                window.location.href = 'login.html';
+            }
+        }
+
+        function setupFileInput() {
+            document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Check file size (2GB limit)
+            const maxSize = 2 * 1024 * 1024 * 1024; // 2GB in bytes
+            if (file.size > maxSize) {
+                alert('File size exceeds 2GB limit. Please select a smaller file.');
+                return;
+            }
+
+            currentFile = file;
+            displayFile(file);
+            updateStorageUsage(file.size);
+        }
+
+        function displayFile(file) {
+            const fileType = getFileType(file.name);
+            
+            // Update file info
+            document.getElementById('fileInfo').textContent = `${file.name} (${formatSize(file.size)})`;
+            
+            // Update file type badge
+            const badge = document.getElementById('fileTypeBadge');
+            badge.textContent = fileType.toUpperCase();
+            badge.className = `file-type-badge file-type-${fileType}`;
+            badge.style.display = 'inline-block';
+
+            // Hide all previews
+            document.querySelectorAll('.file-preview').forEach(p => p.classList.remove('active'));
+            document.getElementById('filePlaceholder').style.display = 'none';
+
+            // Show appropriate preview
+            switch (fileType) {
+                case 'image':
+                    displayImage(file);
+                    break;
+                case 'pdf':
+                    displayPDF(file);
+                    break;
+                case 'code':
+                    displayCode(file);
+                    break;
+                case 'html':
+                    displayHTML(file);
+                    break;
+                case 'doc':
+                    displayText(file);
+                    break;
+                case 'text':
+                    displayText(file);
+                    break;
+                default:
+                    displayText(file);
+            }
+        }
+
+        function getFileType(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext)) return 'image';
+            if (ext === 'pdf') return 'pdf';
+            if (['html', 'htm'].includes(ext)) return 'html';
+            if (['css', 'js', 'json', 'xml'].includes(ext)) return 'code';
+            if (['doc', 'docx'].includes(ext)) return 'doc';
+            if (ext === 'txt') return 'text';
+            return 'text';
+        }
+
+        function displayImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imageContent').src = e.target.result;
+                document.getElementById('imagePreview').classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayPDF(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('pdfContent').src = e.target.result;
+                document.getElementById('pdfPreview').classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function displayCode(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('codeContent').value = e.target.result;
+                document.getElementById('codePreview').classList.add('active');
+            };
+            reader.readAsText(file);
+        }
+
+        function displayHTML(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('htmlContent').srcdoc = e.target.result;
+                document.getElementById('htmlPreview').classList.add('active');
+            };
+            reader.readAsText(file);
+        }
+
+        function displayText(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('textContent').value = e.target.result;
+                document.getElementById('textPreview').classList.add('active');
+            };
+            reader.readAsText(file);
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            
+            // Update buttons
+            document.getElementById('viewModeBtn').classList.toggle('active', mode === 'view');
+            document.getElementById('editModeBtn').classList.toggle('active', mode === 'edit');
+            
+            // Update textareas
+            const textareas = ['textContent', 'codeContent'];
+            textareas.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.readOnly = mode === 'view';
+                }
+            });
+        }
+
+        function minimizeViewer() {
+            document.getElementById('minimizedViewer').classList.add('active');
+            document.querySelector('.viewer-container').style.display = 'none';
+        }
+
+        function maximizeViewer() {
+            if (!isMaximized) {
+                document.documentElement.requestFullscreen();
+                isMaximized = true;
+            } else {
+                document.exitFullscreen();
+                isMaximized = false;
+            }
+        }
+
+        function restoreViewer() {
+            document.getElementById('minimizedViewer').classList.remove('active');
+            document.querySelector('.viewer-container').style.display = 'flex';
+        }
+
+        function closeViewer() {
+            if (currentFile && !confirm('Close current file?')) {
+                return;
+            }
+            window.location.href = 'index.html';
+        }
+
+        function changeNetwork() {
+            currentNetwork = document.getElementById('networkSelect').value;
+            // Simulate network connection status
+            document.querySelectorAll('.cloud-status-item').forEach(item => {
+                item.classList.remove('connected');
+            });
+            document.getElementById(`${currentNetwork}Status`).classList.add('connected');
+        }
+
+        function saveToCloud() {
+            if (!currentFile) {
+                alert('No file to save');
+                return;
+            }
+
+            const networkNames = {
+                'github': 'GitHub',
+                'aws': 'AWS S3',
+                'google': 'Google Drive',
+                'nasa': 'NASA Cloud'
+            };
+
+            // Simulate cloud upload
+            alert(`Saving ${currentFile.name} to ${networkNames[currentNetwork]}...\n\nIn production, this would connect to the ${networkNames[currentNetwork]} API and upload the file.`);
+        }
+
+        function downloadFile() {
+            if (!currentFile) {
+                alert('No file to download');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const blob = new Blob([e.target.result], { type: currentFile.type });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = currentFile.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+            
+            if (currentFile.type.startsWith('text/') || currentFile.type.includes('javascript') || currentFile.type.includes('css')) {
+                reader.readAsText(currentFile);
+            } else {
+                reader.readAsArrayBuffer(currentFile);
+            }
+        }
+
+        function updateStorageUsage(fileSize) {
+            usedStorageGB += (fileSize / (1024 * 1024 * 1024));
+            updateStorageStatus();
+        }
+
+        function updateStorageStatus() {
+            document.getElementById('usedStorage').textContent = `💾 Used: ${usedStorageGB.toFixed(2)} GB`;
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'o':
+                        e.preventDefault();
+                        document.getElementById('fileInput').click();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        saveToCloud();
+                        break;
+                    case 'w':
+                        e.preventDefault();
+                        closeViewer();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

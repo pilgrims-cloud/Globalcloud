@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zip Upload & File Manager - By Olawale Abdul-ganiyu</title>
+    <link rel="stylesheet" href="styles.css">
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <div class="menu-item" onclick="handleNew()">New</div>
+        <div class="menu-item" onclick="handleOpen()">Open</div>
+        <div class="menu-item" onclick="handleSave()">Save</div>
+        <div class="menu-item" onclick="handleSaveAs()">Save As</div>
+        <div class="menu-item" onclick="saveToCloud()">Save to Cloud</div>
+        <div class="menu-item" onclick="openViewer()">Document Viewer</div>
+        <div class="menu-item" onclick="handleClose()">Close</div>
+        <div class="menu-item" onclick="handleExit()">Exit</div>
+        <div class="menu-item" onclick="editCSS()">Edit CSS</div>
+        <div class="menu-item" onclick="editHTML()">Edit HTML</div>
+        <div class="menu-item" onclick="editJavaScript()">Edit JavaScript</div>
+        <div class="menu-item" onclick="deployProject()">Deploy</div>
+    </div>
+
+    <div class="container">
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <h2>Upload Zip File</h2>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="zipInput" accept=".zip" style="display: none;">
+                <label for="zipInput" class="upload-label">
+                    <div class="upload-icon">📁</div>
+                    <p>Click or drag & drop zip file here</p>
+                </label>
+            </div>
+            <div class="upload-buttons">
+                <button onclick="handleZipUpload()" class="btn primary">Extract Zip</button>
+                <button onclick="clearAll()" class="btn secondary">Clear All</button>
+            </div>
+        </div>
+
+        <!-- File Manager Section -->
+        <div class="file-manager-section">
+            <h2>Extracted Files</h2>
+            <div class="folder-path" id="folderPath">Root</div>
+            <div class="file-list" id="fileList">
+                <p class="no-files">No files extracted yet</p>
+            </div>
+            <div class="file-actions">
+                <button onclick="copyFiles()" class="btn action">Copy Files</button>
+                <button onclick="createNewFolder()" class="btn action">New Folder</button>
+                <button onclick="deleteSelected()" class="btn danger">Delete Selected</button>
+            </div>
+        </div>
+
+        <!-- Code Editor Section -->
+        <div class="editor-section">
+            <h2>Code Editor</h2>
+            <div class="editor-tabs">
+                <button class="tab-btn active" data-file="html">HTML</button>
+                <button class="tab-btn" data-file="css">CSS</button>
+                <button class="tab-btn" data-file="javascript">JavaScript</button>
+            </div>
+            <div class="editor-container">
+                <textarea id="codeEditor" class="code-editor" placeholder="Select a file to edit..."></textarea>
+                <div class="editor-actions">
+                    <button onclick="saveCurrentFile()" class="btn primary">Save File</button>
+                    <button onclick="previewCode()" class="btn secondary">Preview</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cloud Storage Section -->
+        <div class="cloud-section">
+            <h2>☁️ Cloud Storage</h2>
+            <div class="cloud-info">
+                <div class="storage-limits">
+                    <div class="limit-item">
+                        <span class="limit-icon">📦</span>
+                        <div class="limit-details">
+                            <span class="limit-value">1,000,000 GB</span>
+                            <span class="limit-label">Total Storage</span>
+                        </div>
+                    </div>
+                    <div class="limit-item">
+                        <span class="limit-icon">⬆️</span>
+                        <div class="limit-details">
+                            <span class="limit-value">2 GB</span>
+                            <span class="limit-label">Per Upload</span>
+                        </div>
+                    </div>
+                    <div class="limit-item">
+                        <span class="limit-icon">💾</span>
+                        <div class="limit-details">
+                            <span class="limit-value" id="cloudUsed">0 GB</span>
+                            <span class="limit-label">Used Storage</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cloud-providers">
+                    <h3>Connected Cloud Services</h3>
+                    <div class="providers-grid">
+                        <div class="provider-card connected" data-provider="github">
+                            <span class="provider-icon">🐙</span>
+                            <span class="provider-name">GitHub</span>
+                            <span class="provider-status">✓ Connected</span>
+                        </div>
+                        <div class="provider-card connected" data-provider="aws">
+                            <span class="provider-icon">🔶</span>
+                            <span class="provider-name">AWS S3</span>
+                            <span class="provider-status">✓ Connected</span>
+                        </div>
+                        <div class="provider-card connected" data-provider="google">
+                            <span class="provider-icon">🌐</span>
+                            <span class="provider-name">Google Drive</span>
+                            <span class="provider-status">✓ Connected</span>
+                        </div>
+                        <div class="provider-card connected" data-provider="nasa">
+                            <span class="provider-icon">🚀</span>
+                            <span class="provider-name">NASA Cloud</span>
+                            <span class="provider-status">✓ Connected</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="cloud-actions">
+                    <button onclick="syncWithCloud()" class="btn primary">Sync with Cloud</button>
+                    <button onclick="viewCloudFiles()" class="btn secondary">View Cloud Files</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL Generation Section -->
+        <div class="url-section">
+            <h2>URL & Sharing</h2>
+            <div class="url-container">
+                <input type="text" id="urlInput" class="url-input" placeholder="Generated URL will appear here" readonly>
+                <button onclick="generateURL()" class="btn primary">Generate URL</button>
+                <button onclick="copyURL()" class="btn secondary">Copy URL</button>
+            </div>
+            <div class="url-info">
+                <p>Share this URL to open in another browser</p>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span id="statusText">Ready</span>
+            <span id="fileCount">0 files</span>
+        </div>
+    </div>
+
+    <!-- Hidden elements -->
+    <input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+    <input type="file" id="fileInput" style="display: none;">
+    
+    <!-- Preview Modal -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Preview</h3>
+                <button class="close-btn" onclick="closePreview()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="previewFrame"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
